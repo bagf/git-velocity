@@ -54,13 +54,19 @@ console.log(
         const { repository, owner } = await getRepositoryInfo();
         const { format } = await getVelocityFormat();
 
-        const velocity = Velocity(format);
+        const refresh = async () => {
+            const velocity = Velocity(format);
 
-        const data = await wrapSpinner(commits.getCommitsByRepo, 'Pulling commits...')(repository, owner,
-            commit => !velocity.isDateWithinThisTimeFrame(commit.date) && !velocity.isDateWithinLastTimeFrame(commit.date));
+            const data = await wrapSpinner(commits.getCommitsByRepo, 'Pulling commits...')(repository, owner,
+                commit => !velocity.isDateWithinThisTimeFrame(commit.date) && !velocity.isDateWithinLastTimeFrame(commit.date));
 
-        const dashboard = CommitsDashboard(velocity);
-        await dashboard.render(data);
+            const dashboard = CommitsDashboard(velocity);
+            await dashboard.render(data);
+        }
+        setInterval(() => {
+            refresh();
+        }, 120*1000);
+        await refresh();
     }
     catch (error) {
         console.error(chalk.red('=== ERROR ==='));
